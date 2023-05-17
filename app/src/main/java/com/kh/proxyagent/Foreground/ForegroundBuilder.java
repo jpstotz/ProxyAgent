@@ -49,7 +49,7 @@ public class ForegroundBuilder extends Service {
 
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Proxy Agent is On")
-                .setContentText("Proxy Agent is currently sending data to your BurpSuite :)")
+                .setContentText("Proxy Agent is currently sending data to your Proxy :)")
                 .setSmallIcon(R.drawable.foreground_icon)
                 .setContentIntent(pendingIntent)
                 .build();

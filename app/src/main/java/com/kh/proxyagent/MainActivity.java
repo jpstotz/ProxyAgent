@@ -16,21 +16,20 @@
 
 package com.kh.proxyagent;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.os.Bundle;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.FragmentTransaction;
-
-import android.app.AlertDialog;
-import android.os.Bundle;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
 import com.kh.proxyagent.Fragments.HomeFragment;
@@ -96,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private boolean hasRootPrivilege() {
-        return executeCommand("whoami");
+        return executeCommand(this, "whoami");
     }
 
     public static String executeCommandWithOutput(String command) {
@@ -133,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
-    public static boolean executeCommand(String command) {
+    public static boolean executeCommand(Context context, String command) {
 
         try {
             Process su = Runtime.getRuntime().exec("su");
@@ -148,6 +147,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             return true;
         } catch (Exception e) {
             e.printStackTrace();
+            Toast.makeText(context, "command failed: " + command, Toast.LENGTH_LONG).show();
             return false;
         }
     }
@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if(settingFragment.testConnection())
                     settingFragment.installCertificate();
                 else
-                    Toast.makeText(getApplicationContext(), "No connection to Burp!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "No connection to Proxy!", Toast.LENGTH_SHORT).show();
             }
         });
         cancel.setOnClickListener(new View.OnClickListener() {

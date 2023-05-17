@@ -107,14 +107,13 @@ public class HomeFragment extends Fragment {
                             boolean hasConnection = testConnection();
                             if (!toggle) {
                                 if(hasConnection) {
-                                    if (MainActivity.executeCommand("settings put global http_proxy " + proxyAddress + ":" + port)) {
+                                    if (MainActivity.executeCommand(getContext(), "settings put global http_proxy " + proxyAddress + ":" + port)) {
                                         powerButton.setImageResource(R.drawable.stop_button);
                                         toggle = true;
                                         interfaceCheck = true;
                                         startForegroundService();
                                     }
-                                }
-                                else {
+                                } else {
                                     AlertDialog.Builder mBuilder = new AlertDialog.Builder(getContext());
                                     View mView = getLayoutInflater().inflate(R.layout.connection_dialog, null);
 
@@ -133,7 +132,7 @@ public class HomeFragment extends Fragment {
                                 }
                             }
                             else {
-                                if(MainActivity.executeCommand("settings put global http_proxy :0")) {
+                                if(MainActivity.executeCommand(getContext(), "settings put global http_proxy :0")) {
                                     powerButton.setImageResource(R.drawable.power);
                                     toggle = false;
                                     stopForegroundService();
@@ -165,21 +164,21 @@ public class HomeFragment extends Fragment {
 
     private void proxySetting(boolean on) {
         if (on)
-            MainActivity.executeCommand("settings put global http_proxy " + proxyAddress + ":" + port);
+            MainActivity.executeCommand(getContext(), "settings put global http_proxy " + proxyAddress + ":" + port);
         else
-            MainActivity.executeCommand("settings put global http_proxy :0");
+            MainActivity.executeCommand(getContext(), "settings put global http_proxy :0");
     }
 
     private boolean testConnection() {
         try {
             proxySetting(true);
-            String url = "http://burp";
+            String url = "http://neverssl.com";
             Request request = new Request.Builder().url(url).build();
             OkHttpClient client = new OkHttpClient();
 
             CallbackFuture future = new CallbackFuture();
             client.newCall(request).enqueue(future);
-            Response response = future.get(2, TimeUnit.SECONDS); // To get async operation to sync operation
+            Response response = future.get(5, TimeUnit.SECONDS); // To get async operation to sync operation
 
             if (response.isSuccessful()) {
                 proxySetting(false);

@@ -221,15 +221,15 @@ public class SettingFragment extends Fragment {
 
     public void proxySetting(boolean on) {
         if (on)
-            MainActivity.executeCommand("settings put global http_proxy " + proxyAddress.getText().toString() + ":" + port.getText().toString());
+            MainActivity.executeCommand(getContext(), "settings put global http_proxy " + proxyAddress.getText().toString() + ":" + port.getText().toString());
         else
-            MainActivity.executeCommand("settings put global http_proxy :0");
+            MainActivity.executeCommand(getContext(), "settings put global http_proxy :0");
     }
 
     public boolean testConnection() {
         try {
             proxySetting(true);
-            String url = "http://burp";
+            String url = "http://neverssl.com";
             Request request = new Request.Builder().url(url).build();
             OkHttpClient client = new OkHttpClient();
 
@@ -255,6 +255,7 @@ public class SettingFragment extends Fragment {
     public void installCertificate() {
         try {
             proxySetting(true);
+            // TODO Check for the used mitm proxy and change the cert URL accordingly
             String url = "http://burp/cert";
             Request request = new Request.Builder().url(url).build();
             OkHttpClient client = new OkHttpClient();
@@ -269,7 +270,7 @@ public class SettingFragment extends Fragment {
                 convertDerToPem();
                 proxySetting(false);
                 if (moveCertToUserCert()) {
-                    MainActivity.executeCommand("reboot");
+                    MainActivity.executeCommand(getContext(), "reboot");
                 } else
                     Toast.makeText(getContext(), "Error importing certificate!", Toast.LENGTH_SHORT).show();
             }
@@ -280,23 +281,19 @@ public class SettingFragment extends Fragment {
     }
 
     private String convertToBase64(File file) throws IOException {
-
-        InputStream inputStream = null;
-        inputStream = new FileInputStream(file);
-        byte[] buffer = new byte[8192];
-        int bytesRead;
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        Base64OutputStream output64 = new Base64OutputStream(output, Base64.DEFAULT);
-        try {
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                output64.write(buffer, 0, bytesRead);
+        try (InputStream inputStream = new FileInputStream(file)) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            try (Base64OutputStream output64 = new Base64OutputStream(output, Base64.DEFAULT)){
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    output64.write(buffer, 0, bytesRead);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            return output.toString();
         }
-        output64.close();
-
-        return output.toString();
     }
 
     private void saveBurpDerFile(byte[] res) throws IOException {
@@ -334,8 +331,8 @@ public class SettingFragment extends Fragment {
 
     private boolean moveCertToUserCert() {
         //9a5ba575.0
-        if(MainActivity.executeCommand("cp "+ getContext().getFilesDir() + "/burp.pem /data/misc/user/0/cacerts-added/9a5ba575.0"))
-            if(MainActivity.executeCommand("chmod 644 /data/misc/user/0/cacerts-added/9a5ba575.0"))
+        if(MainActivity.executeCommand(getContext(), "cp "+ getContext().getFilesDir() + "/burp.pem /data/misc/user/0/cacerts-added/9a5ba575.0"))
+            if(MainActivity.executeCommand(getContext(), "chmod 644 /data/misc/user/0/cacerts-added/9a5ba575.0"))
                 return true;
         return false;
     }
